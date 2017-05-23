@@ -17,14 +17,24 @@ def scawler(url):
 
 def analysis_html(text):
     soup = BeautifulSoup(text, 'html.parser')
-    title = soup.title.string #拿出了title
-    rating_num = soup.strong.string #拿出了评分
-    info = soup.find_all('div', id='info') #拿出了info，但是怎么拿出来IMDb链接和导演呢？？？？？
+    #拿出了title
+    title = soup.title.string
+
+    #拿出了评分
+    rating_num = soup.strong.string
+
+    #拿出了info，但是怎么拿出来IMDb链接和导演呢？？？？？
+    info = soup.find('div', id='info')
+    IMDb_link = 'http://www.imdb.com/title/' + info.find_all('a').pop().string
+    #print(IMDb_link)
+
+    #拿出了tags，并且把他们装到了一个数组里面
     tags_html = soup.find('div', class_='tags-body')
     tags = tags_html.find_all('a')
+    tag_array = []
     for tag in tags:
-        tag1 = tag.string
-        print(tag1)
+        tag_array.append(tag.string)
+    return(title, rating_num, IMDb_link, tag_array)
 
     #tags_soup = BeautifulSoup(tags, 'html.parser')
     #tags = soup.a.string
