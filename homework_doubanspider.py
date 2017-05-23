@@ -28,13 +28,21 @@ def analysis_html(text):
     IMDb_link = 'http://www.imdb.com/title/' + info.find_all('a').pop().string
     #print(IMDb_link)
 
+    #拿导演
+    director = info.find('span')
+    director_name_array = []
+    director_name = director.find_all('a')
+    for director_name in director_name:
+        director_name_array.append(director_name.string)
+    print(director_name_array)
+
     #拿出了tags，并且把他们装到了一个数组里面
     tags_html = soup.find('div', class_='tags-body')
     tags = tags_html.find_all('a')
     tag_array = []
     for tag in tags:
         tag_array.append(tag.string)
-    return(title, rating_num, IMDb_link, tag_array)
+    return(title, rating_num, IMDb_link, director_name_array, tag_array)
 
     #tags_soup = BeautifulSoup(tags, 'html.parser')
     #tags = soup.a.string
