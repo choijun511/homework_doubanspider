@@ -1,8 +1,17 @@
 #抓取豆瓣详情页的电影名称、评分、IMDb链接、导演和常用的tag
 
+#coding=utf-8
+
 import requests
 from bs4 import BeautifulSoup
 import re
+
+from config import DB_USER, DB_PASSWD
+import pymysql
+
+db = pymysql.connect('127.0.0.1', port=3306, user=DB_USER,
+        passwd=DB_PASSWD, db='doubanmovie', charset='UTF8')
+cursor = db.cursor()
 
 # 给定一个url页面
 URL = 'https://movie.douban.com/subject/5133063/'
@@ -23,18 +32,17 @@ def analysis_html(text):
     #拿出了评分
     rating_num = soup.strong.string
 
-    #拿出了info，但是怎么拿出来IMDb链接和导演呢？？？？？
+    #拿出了info，并从info中拿出了IMDb链接和导演
     info = soup.find('div', id='info')
     IMDb_link = 'http://www.imdb.com/title/' + info.find_all('a').pop().string
-    #print(IMDb_link)
-
-    #拿导演
+    #print(IMDb_link）
     director = info.find('span')
     director_name_array = []
     director_name = director.find_all('a')
     for director_name in director_name:
         director_name_array.append(director_name.string)
-    print(director_name_array)
+    director_name_string = ', '.join(director_name_array)
+    #print(director_name_string)
 
     #拿出了tags，并且把他们装到了一个数组里面
     tags_html = soup.find('div', class_='tags-body')
@@ -42,15 +50,15 @@ def analysis_html(text):
     tag_array = []
     for tag in tags:
         tag_array.append(tag.string)
-    return(title, rating_num, IMDb_link, director_name_array, tag_array)
+    tag_string = ', '.join(tag_array)
+    return([title, rating_num, IMDb_link, director_name_string, tag_string])
 
-    #tags_soup = BeautifulSoup(tags, 'html.parser')
-    #tags = soup.a.string
-    #print(tag1)
-    #info_soup = BeautifulSoup(info, 'html.parser')
-    #imdb_link = info_soup.span
-    #print(title, rating_num,imdb_link)
-
+def save_db(data):
+    sql = 'insert into doubanmovie (title, rating_num, IMDb_link, director_name_string, tag_string) values (%s, %s, %s, %s, %s)'
+    cursor.execute(sql, data)
+    db.commit()
 
 if __name__ == '__main__':
-    analysis_html(scawler(URL))
+    result = scawler(URL)
+    data = analysis_html(result)
+    save_db(data)
